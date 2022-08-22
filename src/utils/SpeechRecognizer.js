@@ -30,27 +30,46 @@ const SpeechRecognizer = (state, setState, useEffect, editorRef) => {
       // ─── Get Current Cursor Position Before Updating The State ───────
       const curPos = editor.selectionStart;
 
-      // ─── Conditionaly Return Added Text Space ──────────────────────
+      // ─── Calculate and modify transcript ──────────────────────
       const newText = () => {
-        if (transcript.includes("clear") && transcript.includes("editor")) {
+        //
+        // EXICUTE COMMANDS
+        //
+        if (
+          transcript.includes("clear editor") ||
+          transcript.includes("erase everything") ||
+          transcript.includes("এডিটর পরিষ্কার করো") ||
+          transcript.includes("সবকিছু মুছে ফেলো")
+        ) {
           return "";
         }
 
         if (
-          (transcript.includes("new") && transcript.includes("line")) ||
-          (transcript.includes("new") && transcript.includes("paragraph"))
+          transcript.includes("new line") ||
+          transcript.includes("নতুন লাইন")
+        ) {
+          transcript = "\n";
+        }
+
+        if (
+          transcript.includes("new paragraph") ||
+          transcript.includes("নতুন প্যারা") ||
+          transcript.includes("নতুন প্যারাগ্রাফ")
         ) {
           transcript = "\n\n";
         }
 
-        //System commands
-        if (transcript.includes("copy") && transcript.includes("clipboard")) {
+        if (
+          transcript.includes("copy text to clipboard") ||
+          transcript.includes("লেখা ক্লিপবোর্ডে কপি করো")
+        ) {
           window.navigator.clipboard.writeText(editor.value);
           return editor.value;
         }
 
-        console.log(transcript);
-
+        //
+        // CALCULATE TEXT INSERTION POINT
+        //
         if (editor.value.length === 0) {
           return transcript + " ";
         }
@@ -66,12 +85,29 @@ const SpeechRecognizer = (state, setState, useEffect, editorRef) => {
         );
       };
 
+      //
+      // INSERT STOP SIGNS
+      //
+
+      let newTranscript = newText();
+
+      newTranscript = newTranscript.replace("full stop", ".");
+      newTranscript = newTranscript.replace("coma", ",");
+      newTranscript = newTranscript.replace("exclamation mark", "!");
+      newTranscript = newTranscript.replace("question mark", "?");
+      newTranscript = newTranscript.replace("semicolon", ";");
+      newTranscript = newTranscript.replace("দাড়ি", "।");
+      newTranscript = newTranscript.replace("কমা", ",");
+      newTranscript = newTranscript.replace("বিস্ময় চিহ্ন", "!");
+      newTranscript = newTranscript.replace("প্রশ্নবোধক চিহ্ন", "?");
+      newTranscript = newTranscript.replace("সেমিকোলন", ";");
+
       // ─── Calculate New Cursor Position ───────────────────────────────
-      const newCurPos = curPos + transcript.length + 1;
+      const newCurPos = curPos + newTranscript.length + 1;
 
       // ─── Create New Darft Array ──────────────────────────────────────
       const newDraftArray = state.draftArray;
-      newDraftArray[state.selectedDraft] = newText();
+      newDraftArray[state.selectedDraft] = newTranscript;
       setState(
         {
           ...state,

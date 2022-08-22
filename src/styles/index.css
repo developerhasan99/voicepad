@@ -69,6 +69,9 @@ p {
   .sidebar {
     border-top: #eaeaea 1px solid;
   }
+  .editor {
+    padding: 20px 0px;
+  }
 }
 
 @-webkit-keyframes listening {
