@@ -22,16 +22,32 @@ const SpeechRecognizer = (state, setState, useEffect, editorRef) => {
 
   recognition.onresult = (e) => {
     const editor = editorRef.current;
+
     let transcript = e.results[0][0].transcript;
 
     setState({ ...state, recognized: transcript });
 
     if (e.results[0].isFinal) {
+      //
+      // INSERT STOP SIGNS
+      //
+
+      transcript = transcript.replace("full stop", ".");
+      transcript = transcript.replace("coma", ",");
+      transcript = transcript.replace("exclamation mark", "!");
+      transcript = transcript.replace("question mark", "?");
+      transcript = transcript.replace("semicolon", ";");
+      transcript = transcript.replace("দাড়ি", "।");
+      transcript = transcript.replace("কমা", ",");
+      transcript = transcript.replace("বিস্ময় চিহ্ন", "!");
+      transcript = transcript.replace("প্রশ্নবোধক চিহ্ন", "?");
+      transcript = transcript.replace("সেমিকোলন", ";");
+
       // ─── Get Current Cursor Position Before Updating The State ───────
       const curPos = editor.selectionStart;
 
       // ─── Calculate and modify transcript ──────────────────────
-      const newText = () => {
+      const calculateNewText = () => {
         //
         // EXICUTE COMMANDS
         //
@@ -85,29 +101,14 @@ const SpeechRecognizer = (state, setState, useEffect, editorRef) => {
         );
       };
 
-      //
-      // INSERT STOP SIGNS
-      //
-
-      let newTranscript = newText();
-
-      newTranscript = newTranscript.replace("full stop", ".");
-      newTranscript = newTranscript.replace("coma", ",");
-      newTranscript = newTranscript.replace("exclamation mark", "!");
-      newTranscript = newTranscript.replace("question mark", "?");
-      newTranscript = newTranscript.replace("semicolon", ";");
-      newTranscript = newTranscript.replace("দাড়ি", "।");
-      newTranscript = newTranscript.replace("কমা", ",");
-      newTranscript = newTranscript.replace("বিস্ময় চিহ্ন", "!");
-      newTranscript = newTranscript.replace("প্রশ্নবোধক চিহ্ন", "?");
-      newTranscript = newTranscript.replace("সেমিকোলন", ";");
+      const newText = calculateNewText();
 
       // ─── Calculate New Cursor Position ───────────────────────────────
-      const newCurPos = curPos + newTranscript.length + 1;
+      const newCurPos = curPos + transcript.length + 1;
 
       // ─── Create New Darft Array ──────────────────────────────────────
       const newDraftArray = state.draftArray;
-      newDraftArray[state.selectedDraft] = newTranscript;
+      newDraftArray[state.selectedDraft] = newText;
       setState(
         {
           ...state,
