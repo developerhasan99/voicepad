@@ -1,13 +1,12 @@
 import lStorage from "./localStorage";
 
-const SpeechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
-
-const recognition = new SpeechRecognition();
-
-recognition.interimResults = true;
-
-const SpeechRecognizer = (state, setState, useEffect, editorRef) => {
+const SpeechRecognizer = (
+  state,
+  setState,
+  useEffect,
+  editorRef,
+  recognition
+) => {
   // ─── Set The Language From State ────────────────────────────────────────────────
   recognition.lang = state.language;
 

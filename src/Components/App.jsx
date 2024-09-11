@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 import { useStateWithCallbackLazy } from "use-state-with-callback";
 import { Container } from "@mui/system";
-import { Grid } from "@mui/material";
+import { Alert, AlertTitle, Grid } from "@mui/material";
 
 // ─── Import Custom Components ───────────────────────────────────────────────────
 import Editor from "./Editor";
@@ -15,6 +15,9 @@ import DraftList from "./DraftList";
 import SpeechRecognizer from "../utils/SpeechRecognizer";
 import lStorage from "../utils/localStorage";
 import handleKyeEvents from "../utils/handleKyeEvents";
+
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
 
 // ─── Component Scafolding ───────────────────────────────────────────────────────
 function App() {
@@ -39,7 +42,14 @@ function App() {
 
   // ─── Call Util Functions ────────────────────────────────────────────────────────
   handleKyeEvents(state, setState);
-  SpeechRecognizer(state, setState, useEffect, editorRef);
+
+  // Check and initiate Speech recognition
+  if (SpeechRecognition) {
+    const recognition = new SpeechRecognition();
+
+    recognition.interimResults = true;
+    SpeechRecognizer(state, setState, useEffect, editorRef, recognition);
+  }
 
   return (
     <div>
@@ -49,9 +59,30 @@ function App() {
             <Editor ref={editorRef} state={state} setState={setState} />
           </Grid>
           <Grid item xs={12} md={4} className="sidebar">
-            <Language state={state} setState={setState} />
-            <RecognizedTexts text={state.recognized} />
-            <SwitchListeningMode state={state} setState={setState} />
+            {SpeechRecognition ? (
+              <>
+                <Language state={state} setState={setState} />
+                <RecognizedTexts text={state.recognized} />
+                <SwitchListeningMode state={state} setState={setState} />
+              </>
+            ) : (
+              <Alert
+                variant="filled"
+                severity="error"
+                sx={{
+                  marginBottom: "30px",
+                }}
+              >
+                <AlertTitle>
+                  <strong>
+                    Your browser does not support speech-recognition API!
+                  </strong>
+                </AlertTitle>
+                You are probably using the Firefox or Internet Explorer browser.
+                Please consider using Google Chrome, Safari, Opera Mini, or any
+                other modern browser that supports speech-recognition API.
+              </Alert>
+            )}
             <DraftList state={state} setState={setState} />
           </Grid>
         </Grid>
